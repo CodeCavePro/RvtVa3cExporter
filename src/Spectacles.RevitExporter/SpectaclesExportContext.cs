@@ -56,7 +56,7 @@ namespace Spectacles.RevitExporter
     public class SpectaclesExportContext : IExportContext
     {
         /// <summary>
-        /// Scale entire top level BIM object nove in JSON
+        /// Scale entire top level BIM object node in JSON
         /// output. A scale of 1.0 will output the model in 
         /// millimetres. Currently we scale it to decimetres
         /// so that a typical model has a chance of fitting 
@@ -860,7 +860,7 @@ namespace Spectacles.RevitExporter
             // This method is invoked only if the 
             // custom exporter was set to include faces.
 
-            Debug.Assert(false, "we set exporter.IncludeFaces false");
+            // Debug.Assert(false, "we set exporter.IncludeFaces false");
             Debug.WriteLine("  OnFaceBegin: " + node.NodeName);
             return RenderNodeAction.Proceed;
         }
@@ -870,14 +870,15 @@ namespace Spectacles.RevitExporter
             // This method is invoked only if the 
             // custom exporter was set to include faces.
 
-            Debug.Assert(false, "we set exporter.IncludeFaces false");
+            // Debug.Assert(false, "we set exporter.IncludeFaces false");
             Debug.WriteLine("  OnFaceEnd: " + node.NodeName);
             // Note: This method is invoked even for faces that were skipped.
         }
 
         public RenderNodeAction OnInstanceBegin(InstanceNode node)
         {
-            Debug.WriteLine("  OnInstanceBegin: " + node.NodeName + " symbol: " + node.GetSymbolId().IntegerValue);
+            Debug.WriteLine("  OnInstanceBegin: " + node.NodeName
+                            + " symbol: " + node.GetSymbolId().IntegerValue);
             // This method marks the start of processing a family instance
             _transformationStack.Push(CurrentTransform.Multiply(node.GetTransform()));
 

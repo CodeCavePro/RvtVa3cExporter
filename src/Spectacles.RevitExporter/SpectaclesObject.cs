@@ -1,4 +1,4 @@
-﻿//The MIT License (MIT)
+//The MIT License (MIT)
 
 //Those portions created by va3c authors are provided with the following copyright:
 
@@ -37,14 +37,15 @@ namespace Spectacles.RevitExporter
   /// <summary>
   /// three.js object class, successor of SpectaclesScene.
   /// The structure and properties defined here were
-  /// reverse engineered ftom JSON files exported 
+  /// reverse engineered from JSON files exported 
   /// by the three.js and Spectacles editors.
   /// </summary>
   [DataContract]
   public class SpectaclesContainer
-  {
+    {
     /// <summary>
-    /// Based on MeshPhongMaterial obtained by exporting a cube from the thr
+    /// Based on MeshPhongMaterial obtained by 
+    /// exporting a cube from the three.js editor.
     /// </summary>
     public class SpectaclesMaterial
     {
