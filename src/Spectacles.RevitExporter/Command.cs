@@ -33,15 +33,13 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Interop;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using System.Windows.Forms;
-using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
-using DialogResult = System.Windows.Forms.DialogResult;
 #endregion // Namespaces
 
 namespace Spectacles.RevitExporter
@@ -112,230 +110,19 @@ namespace Spectacles.RevitExporter
     public static List<string> cameraTargets;
 
     #region UI to Filter Parameters
-    public static ParameterFilter _filter;
+
     public static bool _filterParameters = false;
-    public static TabControl _tabControl;
     public static Dictionary<string, List<string>> _parameterDictionary;
     public static Dictionary<string, List<string>> _toExportDictionary;
     public static bool includeT = false;
 
-    /// <summary>
-    /// Function to filter the parameters of the objects in the scene
-    /// </summary>
-    /// <param name="doc">Revit Document</param>
-    /// <param name="includeType">Include Type Parameters in the filter dialog</param>
-    public void filterElementParameters( Document doc, bool includeType )
-    {
-      _parameterDictionary = new Dictionary<string, List<string>>();
-      _toExportDictionary = new Dictionary<string, List<string>>();
-
-      FilteredElementCollector collector = new FilteredElementCollector( doc, doc.ActiveView.Id );
-
-      // Create a dictionary with all the properties for each category.
-
-      foreach( var fi in collector )
-      {
-
-        string category = fi.Category.Name;
-
-        if( category != "Title Blocks" && category != "Generic Annotations" && category != "Detail Items" && category != "Cameras" )
-        {
-          IList<Parameter> parameters = fi.GetOrderedParameters();
-          List<string> parameterNames = new List<string>();
-
-          foreach( Parameter p in parameters )
-          {
-            string pName = p.Definition.Name;
-            string tempVal = "";
-
-            if( StorageType.String == p.StorageType )
-            {
-              tempVal = p.AsString();
-            }
-            else
-            {
-              tempVal = p.AsValueString();
-            }
-            if( !string.IsNullOrEmpty( tempVal ) )
-            {
-              if( _parameterDictionary.ContainsKey( category ) )
-              {
-                if( !_parameterDictionary[category].Contains( pName ) )
-                {
-                  _parameterDictionary[category].Add( pName );
-                }
-              }
-              else
-              {
-                parameterNames.Add( pName );
-              }
-            }
-          }
-          if( parameterNames.Count > 0 )
-          {
-            _parameterDictionary.Add( category, parameterNames );
-          }
-          if( includeType )
-          {
-            ElementId idType = fi.GetTypeId();
-
-            if( ElementId.InvalidElementId != idType )
-            {
-              Element typ = doc.GetElement( idType );
-              parameters = typ.GetOrderedParameters();
-              List<string> parameterTypes = new List<string>();
-              foreach( Parameter p in parameters )
-              {
-                string pName = "Type " + p.Definition.Name;
-                string tempVal = "";
-                if( !_parameterDictionary[category].Contains( pName ) )
-                {
-                  if( StorageType.String == p.StorageType )
-                  {
-                    tempVal = p.AsString();
-                  }
-                  else
-                  {
-                    tempVal = p.AsValueString();
-                  }
-
-                  if( !string.IsNullOrEmpty( tempVal ) )
-                  {
-                    if( _parameterDictionary.ContainsKey( category ) )
-                    {
-                      if( !_parameterDictionary[category].Contains( pName ) )
-                      {
-                        _parameterDictionary[category].Add( pName );
-                      }
-                    }
-                    else
-                    {
-                      parameterTypes.Add( pName );
-                    }
-                  }
-                }
-              }
-              if( parameterTypes.Count > 0 )
-              {
-                _parameterDictionary[category].AddRange( parameterTypes );
-              }
-            }
-
-          }
-        }
-      }
-
-      // Create filter UI.
-
-      _filter = new ParameterFilter();
-
-      _tabControl = new TabControl();
-      _tabControl.Size = new System.Drawing.Size( 590, 350 );
-      _tabControl.Location = new System.Drawing.Point( 15, 90 );
-      _tabControl.Anchor = ( (System.Windows.Forms.AnchorStyles) ( ( ( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom )
-          | System.Windows.Forms.AnchorStyles.Left )
-          | System.Windows.Forms.AnchorStyles.Right ) ) );
-
-      int j = 8;
-
-      // Populate the parameters as a checkbox in each tab
-      foreach( string c in _parameterDictionary.Keys.OrderBy(x => x).ToList())
-      {
-        //Create a checklist
-        CheckedListBox checkList = new CheckedListBox();
-
-        //set the properties of the checklist
-        checkList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom)));
-        checkList.FormattingEnabled = true;
-        checkList.HorizontalScrollbar = true;
-        checkList.Items.AddRange( _parameterDictionary[c].ToArray() );
-        checkList.MultiColumn = true;
-        checkList.Width = 560;
-        checkList.ColumnWidth = 200;
-        checkList.CheckOnClick = true;
-        checkList.TabIndex = j;
-        j++;
-
-        for( int i = 0; i <= ( checkList.Items.Count - 1 ); i++ )
-        {
-          checkList.SetItemCheckState( i, CheckState.Checked );
-        }
-
-        //add a tab
-        TabPage tab = new TabPage( c );
-        tab.Name = c;
-
-        //attach the checklist to the tab
-        tab.Controls.Add( checkList );
-
-        // attach the tab to the tab control
-        _tabControl.TabPages.Add( tab );
-      }
-
-      // Attach the tab control to the filter form
-
-      _filter.Controls.Add( _tabControl );
-
-      // Display filter ui
-
-      _filter.ShowDialog();
-
-      // Loop thru each tab and get the parameters to export
-
-      foreach( TabPage tab in _tabControl.TabPages )
-      {
-        List<string> parametersToExport = new List<string>();
-        foreach( var checkedP in ( (CheckedListBox) tab.Controls[0] ).CheckedItems )
-        {
-          parametersToExport.Add( checkedP.ToString() );
-        }
-        _toExportDictionary.Add( tab.Name, parametersToExport );
-      }
-    }
-    #endregion // UI to Filter Parameters
-
-    #region SelectFile
+    #endregion
     
     /// <summary>
     /// Store the last user selected output folder
     /// in the current editing session.
     /// </summary>
     static string _output_folder_path = null;
-
-    /// <summary>
-    /// Return true is user selects and confirms
-    /// output file name and folder.
-    /// </summary>
-    static bool SelectFile(
-      ref string folder_path,
-      ref string filename )
-    {
-      SaveFileDialog dlg = new SaveFileDialog();
-
-      dlg.Title = "Select JSON Output File";
-      dlg.Filter = "JSON files|*.json";
-
-      if( null != folder_path
-        && 0 < folder_path.Length )
-      {
-        dlg.InitialDirectory = folder_path;
-      }
-
-      dlg.FileName = filename;
-
-      bool rc = DialogResult.OK == dlg.ShowDialog();
-
-      if( rc )
-      {
-        filename = Path.Combine( dlg.InitialDirectory,
-          dlg.FileName );
-
-        folder_path = Path.GetDirectoryName(
-          filename );
-      }
-      return rc;
-    }
-    #endregion // SelectFile
 
     public Result Execute(
       ExternalCommandData commandData,
@@ -345,7 +132,7 @@ namespace Spectacles.RevitExporter
         //expand scope of command arguments
       UIApplication uiapp = commandData.Application;
       UIDocument uidoc = uiapp.ActiveUIDocument;
-      Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
+      Application app = uiapp.Application;
       Document doc = uidoc.Document;
 
         //make sure we are in a 3D view
@@ -357,7 +144,9 @@ namespace Spectacles.RevitExporter
         {
           filename = doc.Title;
         }
-        if( null == _output_folder_path )
+
+          _output_folder_path = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+                if ( null == _output_folder_path )
         {
           // Sometimes the command fails if the file is 
           // detached from central and not saved locally
@@ -375,82 +164,48 @@ namespace Spectacles.RevitExporter
           }
         }
 
-        // Show Export Settings UI
-        ExportOptions opt = new ExportOptions();
-        opt.ShowDialog();
-        if (opt.userCancelled)
+        _filterParameters = false;
+
+        // get all the 3D views in the project
+        UIDocument uiDoc = uiapp.ActiveUIDocument;
+        Document RvtDoc = uiDoc.Document;
+
+        cameraNames = new List<string>();
+        cameraPositions = new List<string>();
+        cameraTargets = new List<string>();
+
+        IEnumerable<Element> views = null;
+        FilteredElementCollector viewCol = new FilteredElementCollector(RvtDoc);
+
+        viewCol.OfClass(typeof(View3D));
+
+        foreach (View3D camera in viewCol)
         {
-            return Result.Cancelled;
-        }
-
-        if( opt.filterParameters )
-        {
-          // Filter the properties
-          filterElementParameters( doc, opt.includeTypeParameters );
-          _filterParameters = true;
-          if( ParameterFilter.status == "cancelled" )
-          {
-            ParameterFilter.status = "";
-            return Result.Cancelled;
-          }
-        }
-        else _filterParameters = false;
-
-        if (ExportOptions.includeViews)
-        {
-            // get all the 3D views in the project
-            UIDocument uiDoc = uiapp.ActiveUIDocument;
-            Document RvtDoc = uiDoc.Document;
-
-            cameraNames = new List<string>();
-            cameraPositions = new List<string>();
-            cameraTargets = new List<string>();
-
-            IEnumerable<Element> views = null;
-            FilteredElementCollector viewCol = new FilteredElementCollector(RvtDoc);
-
-            viewCol.OfClass(typeof(View3D));
-
-            foreach (View3D camera in viewCol)
+            try
             {
-                try
+                if ((camera.IsTemplate == false) && (camera.IsPerspective))
                 {
-                    if ((camera.IsTemplate == false) && (camera.IsPerspective))
-                    {
-                        ViewOrientation3D vo = camera.GetOrientation();
-                        cameraNames.Add(camera.Name);
-                        cameraPositions.Add((-vo.EyePosition.X * 304.8).ToString() + "," + (vo.EyePosition.Z * 304.8).ToString() + "," + (vo.EyePosition.Y* 304.8).ToString());
-                        cameraTargets.Add((-vo.ForwardDirection.X).ToString() + "," + (vo.ForwardDirection.Z).ToString() + "," + (vo.ForwardDirection.Y).ToString());
-                    }
+                    ViewOrientation3D vo = camera.GetOrientation();
+                    cameraNames.Add(camera.Name);
+                    cameraPositions.Add((-vo.EyePosition.X * 304.8) + "," + (vo.EyePosition.Z * 304.8) + "," + (vo.EyePosition.Y * 304.8));
+                    cameraTargets.Add((-vo.ForwardDirection.X) + "," + (vo.ForwardDirection.Z) + "," + (vo.ForwardDirection.Y));
                 }
-                catch { }
             }
-        }       
-
-        // Save file
-        filename = Path.GetFileName( filename ) + ".json";
-
-          //Select output location UI.
-        if( SelectFile( ref _output_folder_path, ref filename ) )
-        {
-
-            //export the file
-          filename = Path.Combine( _output_folder_path,
-            filename );
-
-          ExportView3D( doc.ActiveView as View3D,
-            filename );
-
-            //tell the user we completed successfully
-          Success s = new Success();
-          s.ShowDialog();
-
-
-            //return success
-          return Result.Succeeded;
+            catch { }
         }
-        return Result.Cancelled;
-      }
+
+            // Save file
+            filename = Path.GetFileName( filename ) + ".json";
+
+          //export the file
+          filename = Path.Combine(_output_folder_path,
+              filename);
+
+          ExportView3D(doc.ActiveView as View3D, filename);
+
+          //return success
+          return Result.Succeeded;
+            }
       else
       {
         Util.ErrorMsg(

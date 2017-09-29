@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Serialization;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Visual;
 using Newtonsoft.Json;
@@ -442,7 +443,7 @@ namespace Spectacles.RevitExporter
 
             _container.obj.children = _objects.Values.ToList();
 
-            if (ExportOptions.includeViews && Command.cameraNames.Count>0)
+            if (Command.cameraNames.Count>0)
             {
                 //create an empty string to append the list of views
                 string viewList = Command.cameraNames[0] + "," + Command.cameraPositions[0] + "," + Command.cameraTargets[0];

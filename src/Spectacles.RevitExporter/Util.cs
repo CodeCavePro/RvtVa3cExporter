@@ -1,4 +1,4 @@
-﻿//The MIT License (MIT)
+//The MIT License (MIT)
 
 //Those portions created by va3c authors are provided with the following copyright:
 
@@ -32,25 +32,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
-using WinForms = System.Windows.Forms;
 #endregion // Namespaces
 
 namespace Spectacles.RevitExporter
 {
   class Util
   {
-    const string _caption = "Spectacles";
-
     /// <summary>
     /// Display an error message to the user.
     /// </summary>
     public static void ErrorMsg( string msg )
     {
       Debug.WriteLine( msg );
-      WinForms.MessageBox.Show( msg,
-        _caption,
-        WinForms.MessageBoxButtons.OK,
-        WinForms.MessageBoxIcon.Error );
+      // TODO log
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿//The MIT License (MIT)
+//The MIT License (MIT)
 
 //Those portions created by va3c authors are provided with the following copyright:
 
@@ -54,8 +54,6 @@ namespace Spectacles.RevitExporter
       [DataMember] public int color { get; set; } // 16777215
       [DataMember] public int ambient { get; set; } //16777215
       [DataMember] public int emissive { get; set; } // 1
-      [DataMember] public int specular { get; set; } //1118481
-      [DataMember] public int shininess { get; set; } // 30
       [DataMember] public double opacity { get; set; } // 1
       [DataMember] public bool transparent { get; set; } // false
       [DataMember] public bool wireframe { get; set; } // false
