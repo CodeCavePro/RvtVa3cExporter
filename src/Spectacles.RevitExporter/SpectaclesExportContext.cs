@@ -675,9 +675,9 @@ namespace Spectacles.RevitExporter
         public void OnRPC(RPCNode node)
         {
             Debug.WriteLine("OnRPC: " + node.NodeName);
-            Asset asset = node.GetAsset();
-            Debug.WriteLine("OnRPC: Asset:"
-              + ((asset != null) ? asset.Name : "Null"));
+            //Asset asset = node.GetAsset();
+            //Debug.WriteLine("OnRPC: Asset:"
+            //  + ((asset != null) ? asset.Name : "Null"));
         }
 
         public RenderNodeAction OnViewBegin(ViewNode node)
