@@ -1,4 +1,4 @@
-﻿//The MIT License (MIT)
+//The MIT License (MIT)
 
 //Those portions created by va3c authors are provided with the following copyright:
 
@@ -33,7 +33,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.Utility;
+using Autodesk.Revit.DB.Visual;
 using Newtonsoft.Json;
 #endregion // Namespaces
 
@@ -663,13 +663,14 @@ namespace Spectacles.RevitExporter
             return false;
         }
 
-        public void OnDaylightPortal(DaylightPortalNode node)
-        {
-            Debug.WriteLine("OnDaylightPortal: " + node.NodeName);
-            Asset asset = node.GetAsset();
-            Debug.WriteLine("OnDaylightPortal: Asset:"
-              + ((asset != null) ? asset.Name : "Null"));
-        }
+        // Removed in Revit 2017:
+        //public void OnDaylightPortal( DaylightPortalNode node )
+        //{
+        //  Debug.WriteLine( "OnDaylightPortal: " + node.NodeName );
+        //  Asset asset = node.GetAsset();
+        //  Debug.WriteLine( "OnDaylightPortal: Asset:"
+        //    + ( ( asset != null ) ? asset.Name : "Null" ) );
+        //}
 
         public void OnRPC(RPCNode node)
         {
