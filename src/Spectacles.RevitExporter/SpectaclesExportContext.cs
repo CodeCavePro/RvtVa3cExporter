@@ -914,8 +914,8 @@ namespace Spectacles.RevitExporter
         public void OnLight(LightNode node)
         {
             Debug.WriteLine("OnLight: " + node.NodeName);
-            Asset asset = node.GetAsset();
-            Debug.WriteLine("OnLight: Asset:" + ((asset != null) ? asset.Name : "Null"));
+            //Asset asset = node.GetAsset();
+            //Debug.WriteLine("OnLight: Asset:" + ((asset != null) ? asset.Name : "Null"));
         }
     }
 }
