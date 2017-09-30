@@ -34,11 +34,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
 
 #endregion // Namespaces
 
@@ -50,74 +48,47 @@ namespace Spectacles.RevitExporter
         /// <summary>
         /// Custom assembly resolver to find our support
         /// DLL without being forced to place our entire 
-        /// application in a subfolder of the Revit.exe
+        /// application in a sub-folder of the Revit.exe
         /// directory.
         /// </summary>
-        Assembly CurrentDomain_AssemblyResolve(
-                object sender,
-                ResolveEventArgs args)
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            if (args.Name.Contains("Newtonsoft"))
+            if (!args.Name.Contains("Newtonsoft"))
+                return null;
+
+            var fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (string.IsNullOrWhiteSpace(fileName) || !File.Exists(fileName))
             {
-                string filename = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-                filename = Path.Combine(filename, "Newtonsoft.Json.dll");
-
-                if (File.Exists(filename))
-                {
-                    return Assembly.LoadFrom(filename);
-                }
+                throw new InvalidDataException("Output folder doesn't exist");
             }
-            return null;
+
+            fileName = Path.Combine(fileName, "Newtonsoft.Json.dll");
+
+            return File.Exists(fileName)
+                ? Assembly.LoadFrom(fileName) 
+                : null;
         }
 
         /// <summary>
         /// Export a given 3D view to JSON using
         /// our custom exporter context.
         /// </summary>
-        public void ExportView3D(View3D view3d, string filename)
+        public void ExportView3D(View3D view3D, string filename)
         {
-            AppDomain.CurrentDomain.AssemblyResolve
-                += CurrentDomain_AssemblyResolve;
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            Document doc = view3d.Document;
+            var doc = view3D.Document;
+            var context = new SpectaclesExportContext(doc, filename);
 
-            SpectaclesExportContext context
-                = new SpectaclesExportContext(doc, filename);
-
-            CustomExporter exporter = new CustomExporter(
-                doc, context);
-
-            // Note: Excluding faces just suppresses the 
-            // OnFaceBegin calls, not the actual processing 
-            // of face tessellation. Meshes of the faces 
-            // will still be received by the context.
-            //
-            //exporter.IncludeFaces = false; // removed in Revit 2017
-
-            exporter.ShouldStopOnError = false;
-
-            exporter.Export(view3d);
+            using (var exporter = new CustomExporter(doc, context) { ShouldStopOnError = false })
+            {
+                exporter.Export(view3D);
+            }
         }
 
         public static List<string> cameraNames;
         public static List<string> cameraPositions;
         public static List<string> cameraTargets;
-
-        #region UI to Filter Parameters
-
-        public static bool _filterParameters = false;
-        public static Dictionary<string, List<string>> _parameterDictionary;
-        public static Dictionary<string, List<string>> _toExportDictionary;
-        public static bool includeT = false;
-
-        #endregion
-
-        /// <summary>
-        /// Store the last user selected output folder
-        /// in the current editing session.
-        /// </summary>
-        static string _output_folder_path = null;
 
         public Result Execute(
             ExternalCommandData commandData,
@@ -125,96 +96,67 @@ namespace Spectacles.RevitExporter
             ElementSet elements)
         {
             //expand scope of command arguments
-            UIApplication uiapp = commandData.Application;
-            UIDocument uidoc = uiapp.ActiveUIDocument;
-            Application app = uiapp.Application;
-            Document doc = uidoc.Document;
+            var uiapp = commandData.Application;
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
 
             if (!SetViewTo3D(uidoc))
             {
                 // TODO log the error
-
                 return Result.Failed;
             }
 
             //make sure we are in a 3D view
-            if (doc.ActiveView is View3D)
+            if (!(doc.ActiveView is View3D activeView))
             {
-                //get the name of the active file, and strip off the extension
-                string filename = Path.GetFileNameWithoutExtension(doc.PathName);
-                if (string.IsNullOrWhiteSpace(filename))
-                {
-                    filename = doc.Title;
-                }
-
-                _output_folder_path = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
-                if (null == _output_folder_path)
-                {
-                    // Sometimes the command fails if the file is 
-                    // detached from central and not saved locally
-
-                    try
-                    {
-                        _output_folder_path = Path.GetDirectoryName(
-                            filename);
-                    }
-                    catch
-                    {
-                        TaskDialog.Show("Folder not found",
-                            "Please save the file and run the command again.");
-                        return Result.Failed;
-                    }
-                }
-
-                _filterParameters = false;
-
-                // get all the 3D views in the project
-                UIDocument uiDoc = uiapp.ActiveUIDocument;
-                Document RvtDoc = uiDoc.Document;
-
-                cameraNames = new List<string>();
-                cameraPositions = new List<string>();
-                cameraTargets = new List<string>();
-
-                IEnumerable<Element> views = null;
-                FilteredElementCollector viewCol = new FilteredElementCollector(RvtDoc);
-
-                viewCol.OfClass(typeof(View3D));
-
-                foreach (View3D camera in viewCol)
-                {
-                    try
-                    {
-                        if ((camera.IsTemplate == false) && (camera.IsPerspective))
-                        {
-                            ViewOrientation3D vo = camera.GetOrientation();
-                            cameraNames.Add(camera.Name);
-                            cameraPositions.Add((-vo.EyePosition.X * 304.8) + "," + (vo.EyePosition.Z * 304.8) + "," +
-                                                (vo.EyePosition.Y * 304.8));
-                            cameraTargets.Add((-vo.ForwardDirection.X) + "," + (vo.ForwardDirection.Z) + "," +
-                                              (vo.ForwardDirection.Y));
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                // Save file
-                filename = Path.GetFileName(filename) + ".json";
-
-                //export the file
-                filename = Path.Combine(_output_folder_path,
-                    filename);
-
-                ExportView3D(doc.ActiveView as View3D, filename);
-
-                //return success
-                return Result.Succeeded;
+                Util.ErrorMsg("You must be in a 3D view to export.");
+                return Result.Failed;
             }
 
-            Util.ErrorMsg("You must be in a 3D view to export.");
-            return Result.Failed;
+            //get the name of the active file, and strip off the extension
+            var filename = Path.GetFileNameWithoutExtension(doc.PathName);
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                filename = doc.Title;
+            }
+
+            var outputFolderPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+
+            cameraNames = new List<string>();
+            cameraPositions = new List<string>();
+            cameraTargets = new List<string>();
+
+            var views3D = new FilteredElementCollector(doc).OfClass(typeof(View3D)).OfType<View3D>();
+            foreach (var camera in views3D)
+            {
+                try
+                {
+                    if (camera.IsTemplate || (!camera.IsPerspective))
+                        continue;
+
+                    using (var vo = camera.GetOrientation())
+                    {
+                        cameraNames.Add(camera.Name);
+                        cameraPositions.Add((-vo.EyePosition.X * 304.8) + "," + (vo.EyePosition.Z * 304.8) + "," + (vo.EyePosition.Y * 304.8));
+                        cameraTargets.Add((-vo.ForwardDirection.X) + "," + (vo.ForwardDirection.Z) + "," + (vo.ForwardDirection.Y));
+                    }
+                }
+                catch(Exception)
+                {
+                    // TODO log the exception
+                }
+            }
+
+            // Save file
+            filename = Path.GetFileName(filename) + ".json";
+
+            //export the file
+            filename = Path.Combine(outputFolderPath, filename);
+
+            ExportView3D(activeView, filename);
+
+            //return success
+            return Result.Succeeded;
         }
 
         /// <summary>
@@ -222,10 +164,9 @@ namespace Spectacles.RevitExporter
         /// </summary>
         /// <param name="uidoc">The UI Document.</param>
         /// <returns></returns>
-        private bool SetViewTo3D(UIDocument uidoc)
+        private static bool SetViewTo3D(UIDocument uidoc)
         {
-            View3D view = Get3dView(uidoc.Document);
-
+            var view = Get3DView(uidoc.Document);
             if (null == view)
             {
                 return false;
@@ -233,7 +174,7 @@ namespace Spectacles.RevitExporter
 
             uidoc.ActiveView = view;
 
-            using (Transaction trans = new Transaction(uidoc.Document))
+            using (var trans = new Transaction(uidoc.Document))
             {
                 trans.Start("Change to 3D view");
 
@@ -252,24 +193,18 @@ namespace Spectacles.RevitExporter
         /// <summary>
         /// Retrieve a suitable 3D view from document.
         /// </summary>
-        View3D Get3dView(Document doc)
+        private static View3D Get3DView(Document doc)
         {
-            FilteredElementCollector collector = new FilteredElementCollector(doc).OfClass(typeof(View3D));
+            // Skip view template here because view templates are invisible in project browser
+            var collector = new FilteredElementCollector(doc)
+                .OfClass(typeof(View3D))
+                .OfType<View3D>()
+                .Where(v => !v.IsTemplate);
 
-            foreach (View3D v in collector)
+            foreach (var view3D in collector)
             {
-                Debug.Assert(null != v,
-                    "never expected a null view to be returned"
-                    + " from filtered element collector");
-
-                // Skip view template here because view 
-                // templates are invisible in project 
-                // browser
-
-                if (!v.IsTemplate)
-                {
-                    return v;
-                }
+                Debug.Assert(null != view3D, "never expected a null view to be returned from filtered element collector");
+                return view3D;
             }
             return null;
         }

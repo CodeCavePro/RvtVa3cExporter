@@ -27,121 +27,91 @@
 //SOFTWARE.
 
 #region Namespaces
+
 using System;
-using System.IO;
+using System.Diagnostics;
 using System.Reflection;
-using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
-using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.Attributes;
-using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-
-using Spectacles.RevitExporter.Properties;
 
 #endregion
 
 namespace Spectacles.RevitExporter
 {
-  class App : IExternalApplication
-  {
-    /// <summary>
-    /// Add buttons for our command
-    /// to the ribbon panel.
-    /// </summary>
-    void PopulatePanel( RibbonPanel p )
+    class App : IExternalApplication
     {
-      string path = Assembly.GetExecutingAssembly()
-        .Location;
-
-        //new push button for exporter
-      PushButtonData pbd = new PushButtonData(
-          "Spectacles Exporter", "Spectacles \r\n Exporter",
-          path, "Spectacles.RevitExporter.Command" );
-
-        //add tooltip
-      pbd.ToolTip = "Export the current 3D view as a Spectacles.json file, which can be viewed with the Spectacles Web Viewer.";
-
-        //add icons
-      try
-      {
-          pbd.LargeImage = LoadPngImgSource("Spectacles.RevitExporter.Resources.SPECTACLES_file_32px.png");
-      }
-      catch { }
-
-
-        //add button to panel
-        p.AddItem( pbd );
-
-
-        //new push button for viewer
-        PushButtonData viewerPdb = new PushButtonData("Spectacles Viewer", "Spectacles \r\n Viewer",
-          path, "Spectacles.RevitExporter.Command_Viewer");
-
-        viewerPdb.ToolTip = "Launch the Spectacles Web Viewer.";
-
-        try
+        /// <summary>
+        /// Add buttons for our command
+        /// to the ribbon panel.
+        /// </summary>
+        private static void PopulatePanel(RibbonPanel panel)
         {
-            viewerPdb.LargeImage = LoadPngImgSource("Spectacles.RevitExporter.Resources.SPECTACLES_browser_32px.png");
-        }
-        catch (Exception)
-        {}
+            Debug.WriteLine($"Populating the following panel: {panel.Name}");
 
-        p.AddItem(viewerPdb);
+            var assemblyPath = Assembly.GetExecutingAssembly().Location;
 
-    }
+            //new push button for exporter
+            var pbd = new PushButtonData("Spectacles Exporter", "Spectacles \r\n Exporter", assemblyPath, "Spectacles.RevitExporter.Command")
+            {
+                //add tooltip
+                ToolTip = "Export the current 3D view as a Spectacles.json file, which can be viewed with the Spectacles Web Viewer."
+            };
 
-    /// <summary>
-    /// Load an Embedded Resource Image
-    /// </summary>
-    /// <param name="SourceName">String path to Resource Image</param>
-    /// <returns></returns>
-    /// <remarks></remarks>
-    private ImageSource LoadPngImgSource(string SourceName)
-    {
-
-        try
-        {
-
-            // Assembly
-            Assembly m_assembly = Assembly.GetExecutingAssembly();
-
-            // Stream
-            Stream m_icon = m_assembly.GetManifestResourceStream(SourceName);
-
-            // Decoder
-            PngBitmapDecoder m_decoder = new PngBitmapDecoder(m_icon,
-                             BitmapCreateOptions.PreservePixelFormat,
-                             BitmapCacheOption.Default);
-
-            // Source
-            ImageSource m_source = m_decoder.Frames[0];
-            return (m_source);
-
-        }
-        catch
-        {
+            //add icons
+            try
+            {
+                pbd.LargeImage = LoadPngImgSource("Spectacles.RevitExporter.Resources.SPECTACLES_file_32px.png");
+            }
+            catch(Exception)
+            {
+                // TODO log the error
+            }
         }
 
-        // Fail
-        return null;
+        /// <summary>
+        /// Load an Embedded Resource Image
+        /// </summary>
+        /// <param name="sourceName">String path to Resource Image</param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        private static ImageSource LoadPngImgSource(string sourceName)
+        {
+            try
+            {
+                // Stream
+                using (var icon = Assembly.GetExecutingAssembly().GetManifestResourceStream(sourceName))
+                {
+                    if (icon == null)
+                    {
+                        // TODO log the failure
+                        return null;
+                    }
 
+                    // Decoder
+                    var pngDecoder = new PngBitmapDecoder(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+
+                    // Source
+                    return pngDecoder.Frames[0].Clone();
+                }
+
+            }
+            catch(Exception)
+            {
+                // TODO log the failure
+                return null;
+            }
+        }
+
+        public Result OnStartup(UIControlledApplication a)
+        {
+            PopulatePanel(a.CreateRibbonPanel("Spectacles"));
+            return Result.Succeeded;
+        }
+
+        public Result OnShutdown(UIControlledApplication a)
+        {
+            return Result.Succeeded;
+        }
     }
-
-    public Result OnStartup( UIControlledApplication a )
-    {
-      PopulatePanel(
-        a.CreateRibbonPanel(
-          "Spectacles" ) );
-
-      return Result.Succeeded;
-    }
-
-    public Result OnShutdown( UIControlledApplication a )
-    {
-      return Result.Succeeded;
-    }
-  }
 }

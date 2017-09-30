@@ -27,9 +27,9 @@
 //SOFTWARE.
 
 #region Namespaces
-using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+// ReSharper disable InconsistentNaming
 #endregion // Namespaces
 
 namespace Spectacles.RevitExporter
@@ -86,7 +86,7 @@ namespace Spectacles.RevitExporter
       //jason.data.doubleSided = true;
 
       [DataMember]
-      public List<double> vertices { get; set; } // millimetres
+      public List<double> vertices { get; set; } // millimeters
       // "morphTargets": []
       [DataMember]
       public List<double> normals { get; set; }
