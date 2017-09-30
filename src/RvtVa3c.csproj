@@ -118,7 +118,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\SPECTACLES_file_32px.png" />
     <EmbeddedResource Include="Resources\SPECTACLES_browser_32px.png" />
-    <Content Include="SpectaclesRevitExporter.addin">
+    <Content Include="RvtVa3c.addin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
