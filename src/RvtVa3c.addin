@@ -1,11 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>Spectacles</Name>
-    <Assembly>Spectacles.RevitExporter.dll</Assembly>
-    <FullClassName>Spectacles.RevitExporter.App</FullClassName>
-    <ClientId>D070007F-487A-4D72-8BE1-F474B417FBB9</ClientId>
-    <VendorId>Thornton Tomasetti</VendorId>
-    <VendorDescription>Thornton Tomasetti's CORE studio, http://core.thorntontomasetti.com</VendorDescription>
+    <Name>RvtVa3c</Name>
+    <Assembly>RvtVa3c.dll</Assembly>
+    <FullClassName>RvtVa3c.App</FullClassName>
+    <ClientId>69E003BB-9944-44B2-A19A-C8D07509EB58</ClientId>
+    <VendorId>OpenHoReCa</VendorId>
+    <VendorDescription>OpenHoReCa project, https://github.com/OpenHoReCa/RvtVa3c</VendorDescription>
   </AddIn>
 </RevitAddIns>
