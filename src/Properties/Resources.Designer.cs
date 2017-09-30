@@ -63,49 +63,9 @@ namespace RvtVa3c.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap CORE_logo_horizontal {
+        internal static System.Drawing.Bitmap RvtVa3c {
             get {
-                object obj = ResourceManager.GetObject("CORE_logo_horizontal", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap SPECTACLES_100px {
-            get {
-                object obj = ResourceManager.GetObject("SPECTACLES_100px", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap SPECTACLES_32px {
-            get {
-                object obj = ResourceManager.GetObject("SPECTACLES_32px", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap SPECTACLES_browser_32px {
-            get {
-                object obj = ResourceManager.GetObject("SPECTACLES_browser_32px", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap SPECTACLES_file_32px {
-            get {
-                object obj = ResourceManager.GetObject("SPECTACLES_file_32px", resourceCulture);
+                object obj = ResourceManager.GetObject("RvtVa3c", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

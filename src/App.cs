@@ -30,8 +30,12 @@
 
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
@@ -52,9 +56,7 @@ namespace RvtVa3c
         /// <inheritdoc />
         public Result OnStartup(UIControlledApplication application)
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-            PopulatePanel(application.CreateRibbonPanel("Spectacles"));
+            PopulatePanel(application.CreateRibbonPanel("OpenHoReCa"));
 
             return Result.Succeeded;
         }
@@ -69,33 +71,9 @@ namespace RvtVa3c
         /// <inheritdoc />
         public Result OnShutdown(UIControlledApplication application)
         {
-            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-
             return Result.Succeeded;
         }
 
-        /// <summary>
-        /// Custom assembly resolver to find our support
-        /// DLL without being forced to place our entire 
-        /// application in a sub-folder of the Revit.exe
-        /// directory.
-        /// </summary>
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (!args.Name.Contains("Newtonsoft"))
-                return null;
-
-            var fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            if (string.IsNullOrWhiteSpace(fileName) || !File.Exists(fileName))
-            {
-                throw new InvalidDataException("Output folder doesn't exist");
-            }
-
-            fileName = Path.Combine(fileName, "Newtonsoft.Json.dll");
-            return File.Exists(fileName)
-                ? Assembly.LoadFrom(fileName)
-                : null;
-        }
 
         #region Helper methods
 
@@ -110,56 +88,38 @@ namespace RvtVa3c
             var assemblyPath = Assembly.GetExecutingAssembly().Location;
 
             //new push button for exporter
-            var pbd = new PushButtonData("Spectacles Exporter", "Spectacles \r\n Exporter", assemblyPath, "Spectacles.RevitExporter.Command")
+            var pbd = new PushButtonData("Three.js JSON Scene Exporter", "Three.js JSON \r\n Scene Exporter", assemblyPath, "RvtVa3c.Command")
             {
                 //add tooltip
-                ToolTip = "Export the current 3D view as a Spectacles.json file, which can be viewed with the Spectacles Web Viewer."
+                ToolTip = "Export the current project's 3D view as a JSON scene file viewable in Three.js-driven Va3c viewer."
             };
 
             //add icons
             try
             {
-                pbd.LargeImage = LoadPngImgSource("Spectacles.RevitExporter.Resources.SPECTACLES_file_32px.png");
+                var icon = new Bitmap(Properties.Resources.RvtVa3c);
+                pbd.LargeImage = ImageSourceForBitmap(icon);
             }
             catch (Exception)
             {
                 // TODO log the error
             }
+
+            panel.AddItem(pbd);
         }
 
-        /// <summary>
-        /// Load an Embedded Resource Image
-        /// </summary>
-        /// <param name="sourceName">String path to Resource Image</param>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        private static ImageSource LoadPngImgSource(string sourceName)
+        [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DeleteObject([In] IntPtr hObject);
+
+        public static ImageSource ImageSourceForBitmap(Bitmap bmp)
         {
+            var handle = bmp.GetHbitmap();
             try
             {
-                // Stream
-                using (var icon = Assembly.GetExecutingAssembly().GetManifestResourceStream(sourceName))
-                {
-                    if (icon == null)
-                    {
-                        // TODO log the failure
-                        return null;
-                    }
-
-                    // Decoder
-                    var pngDecoder = new PngBitmapDecoder(icon, BitmapCreateOptions.PreservePixelFormat,
-                        BitmapCacheOption.Default);
-
-                    // Source
-                    return pngDecoder.Frames[0].Clone();
-                }
-
+                return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             }
-            catch (Exception)
-            {
-                // TODO log the failure
-                return null;
-            }
+            finally { DeleteObject(handle); }
         }
 
         #endregion Helper methods
