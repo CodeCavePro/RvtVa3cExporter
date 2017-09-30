@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spectacles.RevitExporter", "Spectacles.RevitExporter\Spectacles.RevitExporter.csproj", "{3F865D22-8849-4DFA-9E7C-3533A8A159EA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RvtVa3c", "Spectacles.RevitExporter\RvtVa3c.csproj", "{3F865D22-8849-4DFA-9E7C-3533A8A159EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {17482ADA-D37B-4C73-9ED0-6EBA16A0096A}
 	EndGlobalSection
 EndGlobal

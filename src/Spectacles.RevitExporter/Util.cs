@@ -27,13 +27,15 @@
 //SOFTWARE.
 
 #region Namespaces
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.DB;
+
 #endregion // Namespaces
 
-namespace Spectacles.RevitExporter
+namespace RvtVa3c
 {
     internal class Util
     {

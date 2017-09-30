@@ -38,7 +38,7 @@ using Autodesk.Revit.UI;
 
 #endregion
 
-namespace Spectacles.RevitExporter
+namespace RvtVa3c
 {
     internal class App : IExternalApplication
     {

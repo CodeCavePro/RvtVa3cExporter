@@ -40,7 +40,7 @@ using Autodesk.Revit.UI;
 
 #endregion // Namespaces
 
-namespace Spectacles.RevitExporter
+namespace RvtVa3c
 {
     [Transaction(TransactionMode.Manual)]
     public class Command : IExternalCommand
@@ -177,7 +177,7 @@ namespace Spectacles.RevitExporter
         public void ExportView3D(View3D view3D, string filename)
         {
             var doc = view3D.Document;
-            var context = new SpectaclesExportContext(doc, filename);
+            var context = new ExportContext(doc, filename);
 
             using (var exporter = new CustomExporter(doc, context) { ShouldStopOnError = false })
             {
