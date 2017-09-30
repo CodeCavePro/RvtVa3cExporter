@@ -45,47 +45,6 @@ namespace Spectacles.RevitExporter
     [Transaction(TransactionMode.Manual)]
     public class Command : IExternalCommand
     {
-        /// <summary>
-        /// Custom assembly resolver to find our support
-        /// DLL without being forced to place our entire 
-        /// application in a sub-folder of the Revit.exe
-        /// directory.
-        /// </summary>
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (!args.Name.Contains("Newtonsoft"))
-                return null;
-
-            var fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            if (string.IsNullOrWhiteSpace(fileName) || !File.Exists(fileName))
-            {
-                throw new InvalidDataException("Output folder doesn't exist");
-            }
-
-            fileName = Path.Combine(fileName, "Newtonsoft.Json.dll");
-
-            return File.Exists(fileName)
-                ? Assembly.LoadFrom(fileName) 
-                : null;
-        }
-
-        /// <summary>
-        /// Export a given 3D view to JSON using
-        /// our custom exporter context.
-        /// </summary>
-        public void ExportView3D(View3D view3D, string filename)
-        {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-            var doc = view3D.Document;
-            var context = new SpectaclesExportContext(doc, filename);
-
-            using (var exporter = new CustomExporter(doc, context) { ShouldStopOnError = false })
-            {
-                exporter.Export(view3D);
-            }
-        }
-
         public static List<string> cameraNames;
         public static List<string> cameraPositions;
         public static List<string> cameraTargets;
@@ -159,6 +118,8 @@ namespace Spectacles.RevitExporter
             return Result.Succeeded;
         }
 
+        #region Helper methods
+
         /// <summary>
         /// Sets the view to 3D view.
         /// </summary>
@@ -208,5 +169,22 @@ namespace Spectacles.RevitExporter
             }
             return null;
         }
+
+        /// <summary>
+        /// Export a given 3D view to JSON using
+        /// our custom exporter context.
+        /// </summary>
+        public void ExportView3D(View3D view3D, string filename)
+        {
+            var doc = view3D.Document;
+            var context = new SpectaclesExportContext(doc, filename);
+
+            using (var exporter = new CustomExporter(doc, context) { ShouldStopOnError = false })
+            {
+                exporter.Export(view3D);
+            }
+        }
+
+        #endregion Helper method
     }
 }

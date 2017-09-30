@@ -30,6 +30,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -39,8 +40,65 @@ using Autodesk.Revit.UI;
 
 namespace Spectacles.RevitExporter
 {
-    class App : IExternalApplication
+    internal class App : IExternalApplication
     {
+        /// <summary>
+        /// Called when the application is started.
+        /// </summary>
+        /// <param name="application">A handle to the application being started.</param>
+        /// <returns>
+        /// Indicates if the external application completes its work successfully.
+        /// </returns>
+        /// <inheritdoc />
+        public Result OnStartup(UIControlledApplication application)
+        {
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+            PopulatePanel(application.CreateRibbonPanel("Spectacles"));
+
+            return Result.Succeeded;
+        }
+
+        /// <summary>
+        /// Called when the application is shut down.
+        /// </summary>
+        /// <param name="application">A handle to the application being shut down.</param>
+        /// <returns>
+        /// Indicates if the external application completes its work successfully.
+        /// </returns>
+        /// <inheritdoc />
+        public Result OnShutdown(UIControlledApplication application)
+        {
+            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+
+            return Result.Succeeded;
+        }
+
+        /// <summary>
+        /// Custom assembly resolver to find our support
+        /// DLL without being forced to place our entire 
+        /// application in a sub-folder of the Revit.exe
+        /// directory.
+        /// </summary>
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            if (!args.Name.Contains("Newtonsoft"))
+                return null;
+
+            var fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (string.IsNullOrWhiteSpace(fileName) || !File.Exists(fileName))
+            {
+                throw new InvalidDataException("Output folder doesn't exist");
+            }
+
+            fileName = Path.Combine(fileName, "Newtonsoft.Json.dll");
+            return File.Exists(fileName)
+                ? Assembly.LoadFrom(fileName)
+                : null;
+        }
+
+        #region Helper methods
+
         /// <summary>
         /// Add buttons for our command
         /// to the ribbon panel.
@@ -63,7 +121,7 @@ namespace Spectacles.RevitExporter
             {
                 pbd.LargeImage = LoadPngImgSource("Spectacles.RevitExporter.Resources.SPECTACLES_file_32px.png");
             }
-            catch(Exception)
+            catch (Exception)
             {
                 // TODO log the error
             }
@@ -89,29 +147,21 @@ namespace Spectacles.RevitExporter
                     }
 
                     // Decoder
-                    var pngDecoder = new PngBitmapDecoder(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+                    var pngDecoder = new PngBitmapDecoder(icon, BitmapCreateOptions.PreservePixelFormat,
+                        BitmapCacheOption.Default);
 
                     // Source
                     return pngDecoder.Frames[0].Clone();
                 }
 
             }
-            catch(Exception)
+            catch (Exception)
             {
                 // TODO log the failure
                 return null;
             }
         }
 
-        public Result OnStartup(UIControlledApplication a)
-        {
-            PopulatePanel(a.CreateRibbonPanel("Spectacles"));
-            return Result.Succeeded;
-        }
-
-        public Result OnShutdown(UIControlledApplication a)
-        {
-            return Result.Succeeded;
-        }
+        #endregion Helper methods
     }
 }
