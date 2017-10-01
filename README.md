@@ -4,7 +4,6 @@ A Revit custom exporter add-in generating JSON output for the [vA3C](http://va3c
 
 
 ## Credits
----------------
 
  * First implemented as part of the vA3C project by Matt Mason and Jeremy Tammik at the New York AEC Hackathon in May 2014
  * Further development was done as part of Spectacles project by Thornton Tomasetti's [CORE studio](http://core.thorntontomasetti.com/).
@@ -50,7 +49,6 @@ For more details on programming Revit add-ins in general, please refer to the [R
 
 
 ## Further Reading
----------------
 
 * [AEC Hackathon – From the Midst of the Fray](http://thebuildingcoder.typepad.com/blog/2014/05/aec-hackathon-from-the-midst-of-the-fray.html)
 * [RvtVa3c – Revit Va3c Generic AEC Viewer JSON Export](http://thebuildingcoder.typepad.com/blog/2014/05/rvtva3c-revit-va3c-generic-aec-viewer-json-export.html)
@@ -58,7 +56,6 @@ For more details on programming Revit add-ins in general, please refer to the [R
 
 
 ## Wishlist
---------
 
 * Texture support
 * Improved handling of normals to gracefully display non-planar surfaces
