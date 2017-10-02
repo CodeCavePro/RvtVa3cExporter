@@ -34,8 +34,8 @@
 
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
-// ReSharper disable InconsistentNaming
 #endregion // Namespaces
 
 namespace RvtVa3c
@@ -47,143 +47,153 @@ namespace RvtVa3c
     /// by the three.js and Va3c editors.
     /// </summary>
     [DataContract]
-    public class Container
+    public class Va3cContainer
     {
         /// <summary>
         /// Based on MeshPhongMaterial obtained by 
         /// exporting a cube from the three.js editor.
         /// </summary>
-        public class Material
+        public class Va3cMaterial
         {
-            [DataMember]
-            public string uuid { get; set; }
+            [DataMember(Name = "uuid")]
+            [JsonProperty(PropertyName = "uuid")]
+            public string UUID { get; set; }
 
-            [DataMember]
-            public string name { get; set; }
+            [DataMember(Name = "name")]
+            [JsonProperty(PropertyName = "name")]
+            public string Name { get; set; }
 
-            [DataMember]
-            public string type { get; set; } // MeshPhongMaterial
+            [DataMember(Name = "type")]
+            [JsonProperty(PropertyName = "type")]
+            public string Type { get; set; } // MeshPhongMaterial
 
-            [DataMember]
-            public int color { get; set; } // 16777215
+            [DataMember(Name = "color")]
+            [JsonProperty(PropertyName = "color")]
+            public int Color { get; set; } // 16777215
 
-            [DataMember]
-            public int ambient { get; set; } //16777215
+            [DataMember(Name = "ambient")]
+            [JsonProperty(PropertyName = "ambient")]
+            public int Ambient { get; set; } //16777215
 
-            [DataMember]
-            public int emissive { get; set; } // 1
+            [DataMember(Name = "emissive")]
+            [JsonProperty(PropertyName = "emissive")]
+            public int Emissive { get; set; } // 1
 
-            [DataMember]
-            public double opacity { get; set; } // 1
+            [DataMember(Name = "opacity")]
+            [JsonProperty(PropertyName = "opacity")]
+            public double Opacity { get; set; } // 1
 
-            [DataMember]
-            public bool transparent { get; set; } // false
+            [DataMember(Name = "transparent")]
+            [JsonProperty(PropertyName = "transparent")]
+            public bool Transparent { get; set; } // false
 
-            [DataMember]
-            public bool wireframe { get; set; } // false
+            [DataMember(Name = "wireframe")]
+            [JsonProperty(PropertyName = "wireframe")]
+            public bool Wireframe { get; set; } // false
 
-            [DataMember]
-            public int shading { get; set; } // 1
+            [DataMember(Name = "shading")]
+            [JsonProperty(PropertyName = "shading")]
+            public int Shading { get; set; } // 1
         }
 
         [DataContract]
-        public class GeometryData
+        public class Va3cGeometryData
         {
-            // populate data object properties
-            //jason.data.vertices = new object[mesh.Vertices.Count * 3];
-            //jason.data.normals = new object[0];
-            //jason.data.uvs = new object[0];
-            //jason.data.faces = new object[mesh.Faces.Count * 4];
-            //jason.data.scale = 1;
-            //jason.data.visible = true;
-            //jason.data.castShadow = true;
-            //jason.data.receiveShadow = false;
-            //jason.data.doubleSided = true;
-
-            [DataMember]
-            public List<double> vertices { get; set; } // millimeters
+            [DataMember(Name = "vertices")]
+            [JsonProperty(PropertyName = "vertices")]
+            public List<double> Vertices { get; set; } // millimeters
 
             // "morphTargets": []
-            [DataMember]
-            public List<double> normals { get; set; }
+            [DataMember(Name = "normals")]
+            [JsonProperty(PropertyName = "normals")]
+            public List<double> Normals { get; set; }
 
             // "colors": []
-            [DataMember]
-            public List<double> uvs { get; set; }
+            [DataMember(Name = "uvs")]
+            [JsonProperty(PropertyName = "uvs")]
+            public List<double> UVs { get; set; }
 
-            [DataMember]
-            public List<int> faces { get; set; } // indices into Vertices + Materials
+            [DataMember(Name = "faces")]
+            [JsonProperty(PropertyName = "faces")]
+            public List<int> Faces { get; set; } // indices into Vertices + Materials
 
-            [DataMember]
-            public double scale { get; set; }
+            [DataMember(Name = "scale")]
+            [JsonProperty(PropertyName = "scale")]
+            public double Scale { get; set; }
 
-            [DataMember]
-            public bool visible { get; set; }
+            [DataMember(Name = "visible")]
+            [JsonProperty(PropertyName = "visible")]
+            public bool Visible { get; set; }
 
-            [DataMember]
-            public bool castShadow { get; set; }
+            [DataMember(Name = "castShadow")]
+            [JsonProperty(PropertyName = "castShadow")]
+            public bool CastShadow { get; set; }
 
-            [DataMember]
-            public bool receiveShadow { get; set; }
+            [DataMember(Name = "receiveShadow")]
+            [JsonProperty(PropertyName = "receiveShadow")]
+            public bool ReceiveShadow { get; set; }
 
-            [DataMember]
-            public bool doubleSided { get; set; }
+            [DataMember(Name = "doubleSided")]
+            [JsonProperty(PropertyName = "doubleSided")]
+            public bool DoubleSided { get; set; }
         }
 
         [DataContract]
-        public class Geometry
+        public class Va3cGeometry
         {
-            [DataMember]
-            public string uuid { get; set; }
+            [DataMember(Name = "uuid")]
+            [JsonProperty(PropertyName = "uuid")]
+            public string UUID { get; set; }
 
-            [DataMember]
-            public string type { get; set; } // "Geometry"
+            [DataMember(Name = "type")]
+            [JsonProperty(PropertyName = "type")]
+            public string Type { get; set; } // "Geometry"
 
-            [DataMember]
-            public GeometryData data { get; set; }
+            [DataMember(Name = "data")]
+            [JsonProperty(PropertyName = "data")]
+            public Va3cGeometryData Data { get; set; }
 
             //[DataMember] public double scale { get; set; }
-            [DataMember]
-            public List<Material> materials { get; set; }
+            [DataMember(Name = "materials")]
+            [JsonProperty(PropertyName = "materials")]
+            public List<Va3cMaterial> Materials { get; set; }
         }
 
         [DataContract]
-        public class Object
+        public class Va3cObject
         {
-            [DataMember]
-            public string uuid { get; set; }
+            [DataMember(Name = "uuid")]
+            [JsonProperty(PropertyName = "uuid")]
+            public string UUID { get; set; }
 
-            [DataMember]
-            public string name { get; set; } // BIM <document name>
+            [DataMember(Name = "name")]
+            [JsonProperty(PropertyName = "name")]
+            public string Name { get; set; } // BIM <document name>
 
-            [DataMember]
-            public string type { get; set; } // Object3D
+            [DataMember(Name = "type")]
+            [JsonProperty(PropertyName = "type")]
+            public string Type { get; set; } // Object3D
 
-            [DataMember]
-            public double[] matrix { get; set; } // [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]
+            [DataMember(Name = "matrix")]
+            [JsonProperty(PropertyName = "matrix")]
+            public double[] Matrix { get; set; } // [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]
 
-            [DataMember]
-            public List<Object> children { get; set; }
+            [DataMember(Name = "children")]
+            [JsonProperty(PropertyName = "children")]
+            public List<Va3cObject> Children { get; set; }
 
             // The following are only on the children:
+            [DataMember(Name = "geometry")]
+            [JsonProperty(PropertyName = "geometry")]
+            public string Geometry { get; set; }
 
-            [DataMember]
-            public string geometry { get; set; }
+            [DataMember(Name = "material")]
+            [JsonProperty(PropertyName = "material")]
+            public string Material { get; set; }
 
-            [DataMember]
-            public string material { get; set; }
-
-            //[DataMember] public List<double> position { get; set; }
-            //[DataMember] public List<double> rotation { get; set; }
-            //[DataMember] public List<double> quaternion { get; set; }
-            //[DataMember] public List<double> scale { get; set; }
-            //[DataMember] public bool visible { get; set; }
-            //[DataMember] public bool castShadow { get; set; }
-            //[DataMember] public bool receiveShadow { get; set; }
-            //[DataMember] public bool doubleSided { get; set; }
-
-            [DataMember]
-            public Dictionary<string, string> userData { get; set; }
+            [DataMember(Name = "userData")]
+            [JsonProperty(PropertyName = "userData")]
+            public Dictionary<string, string> UserData { get; set; }
         }
 
         // https://github.com/mrdoob/three.js/wiki/JSON-Model-format-3
@@ -195,25 +205,35 @@ namespace RvtVa3c
         //
         //2, 0,1,2, 0
 
-        public class Metadata
+        public class Va3cMetadata
         {
-            [DataMember]
-            public string type { get; set; } //  "Object"
+            [DataMember(Name = "type")]
+            [JsonProperty(PropertyName = "type")]
+            public string Type { get; set; } //  "Object"
 
-            [DataMember]
-            public string version { get; set; } // 4.5.x
+            [DataMember(Name = "version")]
+            [JsonProperty(PropertyName = "version")]
+            public string Version { get; set; } // 4.5.x
 
-            [DataMember]
-            public string generator { get; set; } //  "Revit Va3c exporter"
+            [DataMember(Name = "generator")]
+            [JsonProperty(PropertyName = "generator")]
+            public string Generator { get; set; } //  "Revit Va3c exporter"
         }
 
-        [DataMember]
-        public Metadata metadata { get; set; }
+        [DataMember(Name = "metadata")]
+        [JsonProperty(PropertyName = "metadata")]
+        public Va3cMetadata Metadata { get; set; }
 
         [DataMember(Name = "object")]
-        public Object obj { get; set; }
+        [JsonProperty(PropertyName = "object")]
+        public Va3cObject Object { get; set; }
 
-        [DataMember] public List<Geometry> geometries;
-        [DataMember] public List<Material> materials;
+        [DataMember(Name = "geometries")]
+        [JsonProperty(PropertyName = "geometries")]
+        public List<Va3cGeometry> Geometries;
+
+        [DataMember(Name = "materials")]
+        [JsonProperty(PropertyName = "materials")]
+        public List<Va3cMaterial> Materials;
     }
 }

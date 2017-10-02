@@ -57,7 +57,7 @@ namespace RvtVa3c
     //     JSON userData entries
     // TODO:
     // Check for file size
-    // Instance/type reuse
+    // Instance/Type reuse
 
     // ReSharper disable once InconsistentNaming
     public class Va3cExportContext : IExportContext
@@ -222,20 +222,20 @@ namespace RvtVa3c
         private Document _currentDoc;
         private readonly Document _doc;
         private readonly string _filename;
-        private Container _container;
+        private Va3cContainer _container;
 
-        private Dictionary<string, Container.Material> _materials;
-        private Dictionary<string, Container.Object> _objects;
-        private Dictionary<string, Container.Geometry> _geometries;
+        private Dictionary<string, Va3cContainer.Va3cMaterial> _materials;
+        private Dictionary<string, Va3cContainer.Va3cObject> _objects;
+        private Dictionary<string, Va3cContainer.Va3cGeometry> _geometries;
         private Dictionary<string, string> _viewsAndLayersDict;
         private List<string> _layerList;
 
-        private Container.Object _currentElement;
+        private Va3cContainer.Va3cObject _currentElement;
 
         // Keyed on material uid to handle several materials per element:
 
-        private Dictionary<string, Container.Object> _currentObject;
-        private Dictionary<string, Container.Geometry> _currentGeometry;
+        private Dictionary<string, Va3cContainer.Va3cObject> _currentObject;
+        private Dictionary<string, Va3cContainer.Va3cGeometry> _currentGeometry;
         private Dictionary<string, VertexLookupInt> _vertices;
 
         private readonly Stack<ElementId> _elementStack = new Stack<ElementId>();
@@ -245,9 +245,9 @@ namespace RvtVa3c
 
         public string myjs;
 
-        private Container.Object CurrentObjectPerMaterial => _currentObject[_currentMaterialUid];
+        private Va3cContainer.Va3cObject CurrentObjectPerMaterial => _currentObject[_currentMaterialUid];
 
-        private Container.Geometry CurrentGeometryPerMaterial => _currentGeometry[_currentMaterialUid];
+        private Va3cContainer.Va3cGeometry CurrentGeometryPerMaterial => _currentGeometry[_currentMaterialUid];
 
         private VertexLookupInt CurrentVerticesPerMaterial => _vertices[_currentMaterialUid];
 
@@ -267,59 +267,59 @@ namespace RvtVa3c
             {
                 if (_currentDoc?.GetElement(uidMaterial) is Material material)
                 {
-                    var m = new Container.Material
+                    var m = new Va3cContainer.Va3cMaterial
                     {
-                        uuid = uidMaterial,
-                        name = material.Name,
-                        type = "MeshLambertMaterial",
-                        color = Util.ColorToInt(material.Color)
+                        UUID = uidMaterial,
+                        Name = material.Name,
+                        Type = "MeshLambertMaterial",
+                        Color = Util.ColorToInt(material.Color)
                     };
 
-                    m.ambient = m.color;
-                    m.emissive = 0;
-                    m.opacity = 0.01 * (100 - material
+                    m.Ambient = m.Color;
+                    m.Emissive = 0;
+                    m.Opacity = 0.01 * (100 - material
                                             .Transparency
-                                ); // Revit has material.Transparency in [0,100], three.js expects opacity in [0.0,1.0]
-                    m.transparent = 0 < material.Transparency;
-                    m.shading = 1;
-                    m.wireframe = false;
+                                ); // Revit has material.Transparency in [0,100], three.js expects Opacity in [0.0,1.0]
+                    m.Transparent = 0 < material.Transparency;
+                    m.Shading = 1;
+                    m.Wireframe = false;
 
                     _materials.Add(uidMaterial, m);
                 }
             }
             _currentMaterialUid = uidMaterial;
 
-            var uidPerMaterial = _currentElement.uuid + "-" + uidMaterial;
+            var uidPerMaterial = _currentElement.UUID + "-" + uidMaterial;
 
             if (!_currentObject.ContainsKey(uidMaterial))
             {
                 Debug.Assert(!_currentGeometry.ContainsKey(uidMaterial), "expected same keys in both");
 
-                _currentObject.Add(uidMaterial, new Container.Object());
-                CurrentObjectPerMaterial.name = _currentElement.name;
-                CurrentObjectPerMaterial.geometry = uidPerMaterial;
-                CurrentObjectPerMaterial.material = _currentMaterialUid;
-                CurrentObjectPerMaterial.matrix = new double[] {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-                CurrentObjectPerMaterial.type = "Mesh";
-                CurrentObjectPerMaterial.uuid = uidPerMaterial;
+                _currentObject.Add(uidMaterial, new Va3cContainer.Va3cObject());
+                CurrentObjectPerMaterial.Name = _currentElement.Name;
+                CurrentObjectPerMaterial.Geometry = uidPerMaterial;
+                CurrentObjectPerMaterial.Material = _currentMaterialUid;
+                CurrentObjectPerMaterial.Matrix = new double[] {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+                CurrentObjectPerMaterial.Type = "Mesh";
+                CurrentObjectPerMaterial.UUID = uidPerMaterial;
             }
 
             if (!_currentGeometry.ContainsKey(uidMaterial))
             {
-                _currentGeometry.Add(uidMaterial, new Container.Geometry());
-                CurrentGeometryPerMaterial.uuid = uidPerMaterial;
-                CurrentGeometryPerMaterial.type = "Geometry";
-                CurrentGeometryPerMaterial.data = new Container.GeometryData
+                _currentGeometry.Add(uidMaterial, new Va3cContainer.Va3cGeometry());
+                CurrentGeometryPerMaterial.UUID = uidPerMaterial;
+                CurrentGeometryPerMaterial.Type = "Geometry";
+                CurrentGeometryPerMaterial.Data = new Va3cContainer.Va3cGeometryData
                 {
-                    faces = new List<int>(),
-                    vertices = new List<double>(),
-                    normals = new List<double>(),
-                    uvs = new List<double>(),
-                    visible = true,
-                    castShadow = true,
-                    receiveShadow = false,
-                    doubleSided = true,
-                    scale = 1.0
+                    Faces = new List<int>(),
+                    Vertices = new List<double>(),
+                    Normals = new List<double>(),
+                    UVs = new List<double>(),
+                    Visible = true,
+                    CastShadow = true,
+                    ReceiveShadow = false,
+                    DoubleSided = true,
+                    Scale = 1.0
                 };
             }
 
@@ -338,9 +338,9 @@ namespace RvtVa3c
 
         public bool Start()
         {
-            _materials = new Dictionary<string, Container.Material>();
-            _geometries = new Dictionary<string, Container.Geometry>();
-            _objects = new Dictionary<string, Container.Object>();
+            _materials = new Dictionary<string, Va3cContainer.Va3cMaterial>();
+            _geometries = new Dictionary<string, Va3cContainer.Va3cGeometry>();
+            _objects = new Dictionary<string, Va3cContainer.Va3cObject>();
 
             _viewsAndLayersDict = new Dictionary<string, string>();
             _layerList = new List<string>();
@@ -349,21 +349,21 @@ namespace RvtVa3c
 
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion ?? "0.0";
-            _container = new Container
+            _container = new Va3cContainer
             {
-                metadata = new Container.Metadata
+                Metadata = new Va3cContainer.Va3cMetadata
                 {
-                    type = "Object",
-                    version = assemblyVersion,
-                    generator = "Revit Va3c exporter"
+                    Type = "Object",
+                    Version = assemblyVersion,
+                    Generator = "Revit Va3c exporter"
                 },
-                geometries = new List<Container.Geometry>(),
-                obj = new Container.Object
+                Geometries = new List<Va3cContainer.Va3cGeometry>(),
+                Object = new Va3cContainer.Va3cObject
                 {
-                    uuid = _currentDoc.ActiveView.UniqueId,
-                    name = "BIM " + _currentDoc.Title,
-                    type = "Scene",
-                    matrix = new[]
+                    UUID = _currentDoc.ActiveView.UniqueId,
+                    Name = "BIM " + _currentDoc.Title,
+                    Type = "Scene",
+                    Matrix = new[]
                     {
                         _scale_bim, 0, 0, 0,
                         0, _scale_bim, 0, 0,
@@ -379,9 +379,9 @@ namespace RvtVa3c
         public void Finish()
         {
             // Finish populating scene
-            _container.materials = _materials.Values.ToList();
-            _container.geometries = _geometries.Values.ToList();
-            _container.obj.children = _objects.Values.ToList();
+            _container.Materials = _materials.Values.ToList();
+            _container.Geometries = _geometries.Values.ToList();
+            _container.Object.Children = _objects.Values.ToList();
 
             if (Command.cameraNames.Count > 0)
             {
@@ -396,7 +396,7 @@ namespace RvtVa3c
                 _viewsAndLayersDict.Add("views", viewList);
             }
 
-            _container.obj.userData = _viewsAndLayersDict;
+            _container.Object.UserData = _viewsAndLayersDict;
 
 
             var settings = new JsonSerializerSettings
@@ -422,10 +422,10 @@ namespace RvtVa3c
                 var v2 = CurrentVerticesPerMaterial.AddVertex(new PointInt(pts[facet.V2], _switchCoordinates));
                 var v3 = CurrentVerticesPerMaterial.AddVertex(new PointInt(pts[facet.V3], _switchCoordinates));
 
-                CurrentGeometryPerMaterial.data.faces.Add(0);
-                CurrentGeometryPerMaterial.data.faces.Add(v1);
-                CurrentGeometryPerMaterial.data.faces.Add(v2);
-                CurrentGeometryPerMaterial.data.faces.Add(v3);
+                CurrentGeometryPerMaterial.Data.Faces.Add(0);
+                CurrentGeometryPerMaterial.Data.Faces.Add(v1);
+                CurrentGeometryPerMaterial.Data.Faces.Add(v2);
+                CurrentGeometryPerMaterial.Data.Faces.Add(v3);
             }
         }
 
@@ -454,7 +454,7 @@ namespace RvtVa3c
             {
                 //string uid = Guid.NewGuid().ToString();
 
-                // Generate a GUID based on color, 
+                // Generate a GUID based on Color, 
                 // transparency, etc. to avoid duplicating
                 // non-element material definitions.
 
@@ -463,22 +463,22 @@ namespace RvtVa3c
 
                 if (!_materials.ContainsKey(uid))
                 {
-                    var m = new Container.Material
+                    var m = new Va3cContainer.Va3cMaterial
                     {
-                        uuid = uid,
-                        type = "MeshLambertMaterial",
-                        color = iColor
+                        UUID = uid,
+                        Type = "MeshLambertMaterial",
+                        Color = iColor
                     };
 
-                    m.ambient = m.color;
-                    m.emissive = 0;
-                    m.shading = 1;
-                    m.opacity = 1; // 128 - material.Transparency;
-                    m.opacity =
+                    m.Ambient = m.Color;
+                    m.Emissive = 0;
+                    m.Shading = 1;
+                    m.Opacity = 1; // 128 - material.Transparency;
+                    m.Opacity =
                         1.0 - node
-                            .Transparency; // Revit MaterialNode has double Transparency in ?range?, three.js expects opacity in [0.0,1.0]
-                    m.transparent = 0.0 < node.Transparency;
-                    m.wireframe = false;
+                            .Transparency; // Revit MaterialNode has double Transparency in ?range?, three.js expects Opacity in [0.0,1.0]
+                    m.Transparent = 0.0 < node.Transparency;
+                    m.Wireframe = false;
 
                     _materials.Add(uid, m);
                 }
@@ -566,16 +566,16 @@ namespace RvtVa3c
             // multiple current child objects each with a 
             // separate current geometry.
 
-            _currentElement = new Container.Object();
+            _currentElement = new Va3cContainer.Va3cObject();
 
-            _currentElement.name = Util.ElementDescription(e);
-            _currentElement.material = _currentMaterialUid;
-            _currentElement.matrix = new double[] {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-            _currentElement.type = "RevitElement";
-            _currentElement.uuid = uid;
+            _currentElement.Name = Util.ElementDescription(e);
+            _currentElement.Material = _currentMaterialUid;
+            _currentElement.Matrix = new double[] {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+            _currentElement.Type = "RevitElement";
+            _currentElement.UUID = uid;
 
-            _currentObject = new Dictionary<string, Container.Object>();
-            _currentGeometry = new Dictionary<string, Container.Geometry>();
+            _currentObject = new Dictionary<string, Va3cContainer.Va3cObject>();
+            _currentGeometry = new Dictionary<string, Va3cContainer.Va3cGeometry>();
             _vertices = new Dictionary<string, VertexLookupInt>();
 
             if (e.Category?.Material != null)
@@ -613,7 +613,7 @@ namespace RvtVa3c
             var materials = _vertices.Keys.ToList();
             var n = materials.Count;
 
-            _currentElement.children = new List<Container.Object>(n);
+            _currentElement.Children = new List<Va3cContainer.Va3cObject>(n);
 
             foreach (var material in materials)
             {
@@ -622,16 +622,16 @@ namespace RvtVa3c
 
                 foreach (var p in _vertices[material])
                 {
-                    geo.data.vertices.Add(_scale_vertex * p.Key.X);
-                    geo.data.vertices.Add(_scale_vertex * p.Key.Y);
-                    geo.data.vertices.Add(_scale_vertex * p.Key.Z);
+                    geo.Data.Vertices.Add(_scale_vertex * p.Key.X);
+                    geo.Data.Vertices.Add(_scale_vertex * p.Key.Y);
+                    geo.Data.Vertices.Add(_scale_vertex * p.Key.Z);
                 }
-                obj.geometry = geo.uuid;
+                obj.Geometry = geo.UUID;
 
                 //QUESTION: Should we attempt to further ensure uniqueness? or should we just update the geometry that is there?
                 //old: _geometries.Add(geo.uuid, geo);
-                _geometries[geo.uuid] = geo;
-                _currentElement.children.Add(obj);
+                _geometries[geo.UUID] = geo;
+                _currentElement.Children.Add(obj);
             }
 
             // var d = Util.GetElementProperties(e, true);
@@ -655,12 +655,12 @@ namespace RvtVa3c
 
             if (!_layerList.Contains(layerName)) _layerList.Add(layerName);
 
-            _currentElement.userData = d;
+            _currentElement.UserData = d;
 
             //also add guid to user data dictionary
-            _currentElement.userData.Add("revit_id", uid);
+            _currentElement.UserData.Add("revit_id", uid);
 
-            _objects[_currentElement.uuid] = _currentElement;
+            _objects[_currentElement.UUID] = _currentElement;
 
             _elementStack.Pop();
         }

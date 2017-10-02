@@ -131,7 +131,7 @@ namespace RvtVa3c
 
         /// <summary>
         /// Return a string describing the given element:
-        /// .NET type name,
+        /// .NET Type name,
         /// category name,
         /// family and symbol name for a family instance,
         /// element id and element name.
@@ -145,7 +145,7 @@ namespace RvtVa3c
             }
 
             // For a wall, the element name equals the
-            // wall type name, which is equivalent to the
+            // wall Type name, which is equivalent to the
             // family name ...
 
             FamilyInstance fi = e as FamilyInstance;
