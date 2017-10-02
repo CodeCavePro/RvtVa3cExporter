@@ -35,6 +35,7 @@ using System.IO;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Newtonsoft.Json;
+using System.Reflection;
 
 #endregion // Namespaces
 
@@ -54,7 +55,8 @@ namespace RvtVa3c
     // Check for file size
     // Instance/type reuse
 
-    public class ExportContext : IExportContext
+    // ReSharper disable once InconsistentNaming
+    public class Va3cExportContext : IExportContext
     {
         /// <summary>
         /// Scale entire top level BIM object node in JSON
@@ -255,11 +257,11 @@ namespace RvtVa3c
         /// <summary>
         /// Set the current material
         /// </summary>
-        void SetCurrentMaterial(string uidMaterial)
+        private void SetCurrentMaterial(string uidMaterial)
         {
             if (!_materials.ContainsKey(uidMaterial))
             {
-                if (_currentDoc.GetElement(uidMaterial) is Material material)
+                if (_currentDoc?.GetElement(uidMaterial) is Material material)
                 {
                     var m = new Container.Material
                     {
@@ -303,16 +305,18 @@ namespace RvtVa3c
                 _currentGeometry.Add(uidMaterial, new Container.Geometry());
                 CurrentGeometryPerMaterial.uuid = uidPerMaterial;
                 CurrentGeometryPerMaterial.type = "Geometry";
-                CurrentGeometryPerMaterial.data = new Container.GeometryData();
-                CurrentGeometryPerMaterial.data.faces = new List<int>();
-                CurrentGeometryPerMaterial.data.vertices = new List<double>();
-                CurrentGeometryPerMaterial.data.normals = new List<double>();
-                CurrentGeometryPerMaterial.data.uvs = new List<double>();
-                CurrentGeometryPerMaterial.data.visible = true;
-                CurrentGeometryPerMaterial.data.castShadow = true;
-                CurrentGeometryPerMaterial.data.receiveShadow = false;
-                CurrentGeometryPerMaterial.data.doubleSided = true;
-                CurrentGeometryPerMaterial.data.scale = 1.0;
+                CurrentGeometryPerMaterial.data = new Container.GeometryData
+                {
+                    faces = new List<int>(),
+                    vertices = new List<double>(),
+                    normals = new List<double>(),
+                    uvs = new List<double>(),
+                    visible = true,
+                    castShadow = true,
+                    receiveShadow = false,
+                    doubleSided = true,
+                    scale = 1.0
+                };
             }
 
             if (!_vertices.ContainsKey(uidMaterial))
@@ -321,7 +325,7 @@ namespace RvtVa3c
             }
         }
 
-        public ExportContext(Document document, string filename)
+        public Va3cExportContext(Document document, string filename)
         {
             _doc = document;
             _currentDoc = document;
@@ -339,13 +343,15 @@ namespace RvtVa3c
 
             _transformationStack.Push(Transform.Identity);
 
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyVersion = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion ?? "0.0";
             _container = new Container
             {
                 metadata = new Container.Metadata
                 {
                     type = "Object",
-                    version = 4.3,
-                    generator = "Spectacles.RevitExporter Revit Spectacles exporter"
+                    version = assemblyVersion,
+                    generator = "Revit Va3c exporter"
                 },
                 geometries = new List<Container.Geometry>(),
                 obj = new Container.Object
@@ -388,16 +394,6 @@ namespace RvtVa3c
 
             _container.obj.userData = _viewsAndLayersDict;
 
-            // Serialise scene
-
-            //using( FileStream stream
-            //  = File.OpenWrite( filename ) )
-            //{
-            //  DataContractJsonSerializer serialiser
-            //    = new DataContractJsonSerializer(
-            //      typeof( SpectaclesContainer ) );
-            //  serialiser.WriteObject( stream, _container );
-            //}
 
             var settings = new JsonSerializerSettings
             {
@@ -411,13 +407,6 @@ namespace RvtVa3c
 
         public void OnPolymesh(PolymeshTopology polymesh)
         {
-            //Debug.WriteLine( string.Format(
-            //  "    OnPolymesh: {0} points, {1} facets, {2} normals {3}",
-            //  polymesh.NumberOfPoints,
-            //  polymesh.NumberOfFacets,
-            //  polymesh.NumberOfNormals,
-            //  polymesh.DistributionOfNormals ) );
-
             var pts = polymesh.GetPoints();
             var t = CurrentTransform;
 
@@ -425,10 +414,6 @@ namespace RvtVa3c
 
             foreach (var facet in polymesh.GetFacets())
             {
-                //Debug.WriteLine( string.Format(
-                //  "      {0}: {1} {2} {3}", i++,
-                //  facet.V1, facet.V2, facet.V3 ) );
-
                 var v1 = CurrentVerticesPerMaterial.AddVertex(new PointInt(pts[facet.V1], _switchCoordinates));
                 var v2 = CurrentVerticesPerMaterial.AddVertex(new PointInt(pts[facet.V2], _switchCoordinates));
                 var v3 = CurrentVerticesPerMaterial.AddVertex(new PointInt(pts[facet.V3], _switchCoordinates));
@@ -589,8 +574,7 @@ namespace RvtVa3c
             _currentGeometry = new Dictionary<string, Container.Geometry>();
             _vertices = new Dictionary<string, VertexLookupInt>();
 
-            if (null != e.Category
-                && null != e.Category.Material)
+            if (e.Category?.Material != null)
             {
                 SetCurrentMaterial(e.Category.Material.UniqueId);
             }
@@ -627,7 +611,7 @@ namespace RvtVa3c
 
             _currentElement.children = new List<Container.Object>(n);
 
-            foreach (string material in materials)
+            foreach (var material in materials)
             {
                 var obj = _currentObject[material];
                 var geo = _currentGeometry[material];

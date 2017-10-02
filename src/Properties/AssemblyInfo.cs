@@ -1,3 +1,4 @@
+using System.Resources;
 //The MIT License (MIT)
 
 //Those portions created by va3c authors are provided with the following copyright:
@@ -35,14 +36,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Spectacles.RevitExporter")]
-[assembly: AssemblyDescription("Revit custom exporter add-in generating JSON output for the Spectacles viewer")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Thornton Tomasetti")]
-[assembly: AssemblyProduct("Spectacles.RevitExporter")]
-[assembly: AssemblyCopyright("Copyright 2015-2017 © Thornton Tomasetti, et al.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyTitle("RvtVa3c")]
+[assembly: AssemblyDescription("Revit custom exporter add-in generating JSON output for the Va3c Three.js-based viewer")]
+[assembly: AssemblyCompany("OpenHoReCa")]
+[assembly: AssemblyProduct("RvtVa3c")]
+[assembly: AssemblyCopyright("Copyright 2017 Â© OpenHoReCa")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
@@ -75,5 +73,6 @@ using System.Runtime.InteropServices;
 // 2014-11-25 2015.0.0.28 skip elements with null category in OnElementEnd as well
 // 2015-02-15 2015.0.0.29 incremented copyright year
 //
-[assembly: AssemblyVersion("0.1.0.4")]
-[assembly: AssemblyFileVersion("0.1.0.4")]
+[assembly: AssemblyVersion("4.5.*")]
+[assembly: NeutralResourcesLanguage("en")]
+

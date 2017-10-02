@@ -37,10 +37,10 @@ using System.Runtime.Serialization;
 namespace RvtVa3c
 {
     /// <summary>
-    /// three.js object class, successor of SpectaclesScene.
+    /// three.js object class, successor of Va3cScene.
     /// The structure and properties defined here were
     /// reverse engineered from JSON files exported 
-    /// by the three.js and Spectacles editors.
+    /// by the three.js and Va3c editors.
     /// </summary>
     [DataContract]
     public class Container
@@ -197,10 +197,10 @@ namespace RvtVa3c
             public string type { get; set; } //  "Object"
 
             [DataMember]
-            public double version { get; set; } // 4.3
+            public string version { get; set; } // 4.5.x
 
             [DataMember]
-            public string generator { get; set; } //  "Spectacles.RevitExporter Revit Spectacles exporter"
+            public string generator { get; set; } //  "Revit Va3c exporter"
         }
 
         [DataMember]

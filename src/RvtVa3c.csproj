@@ -98,8 +98,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ExportContext.cs" />
-    <Compile Include="Object.cs" />
+    <Compile Include="Va3cExportContext.cs" />
+    <Compile Include="Va3cObject.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -177,7 +177,7 @@ namespace RvtVa3c
         public void ExportView3D(View3D view3D, string filename)
         {
             var doc = view3D.Document;
-            var context = new ExportContext(doc, filename);
+            var context = new Va3cExportContext(doc, filename);
 
             using (var exporter = new CustomExporter(doc, context) { ShouldStopOnError = false })
             {
