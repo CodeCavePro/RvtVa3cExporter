@@ -230,10 +230,10 @@ namespace RvtVa3c
 
         [DataMember(Name = "geometries")]
         [JsonProperty(PropertyName = "geometries")]
-        public List<Va3cGeometry> Geometries;
+        public List<Va3cGeometry> Geometries { get; set; } = new List<Va3cGeometry>();
 
         [DataMember(Name = "materials")]
         [JsonProperty(PropertyName = "materials")]
-        public List<Va3cMaterial> Materials;
+        public List<Va3cMaterial> Materials { get; set; } = new List<Va3cMaterial>();
     }
 }
